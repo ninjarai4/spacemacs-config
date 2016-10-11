@@ -44,7 +44,7 @@ values."
      emacs-lisp
      git
      org
-     (shell :variables
+     (shell :variable
             shell-default-height 30
             shell-default-position 'bottom)
      spell-checking
@@ -119,9 +119,11 @@ values."
    ;; List of items to show in startup buffer or an association list of
    ;; the form `(list-type . list-size)`. If nil then it is disabled.
    ;; Possible values for list-type are:
-   ;; `recents' `bookmarks' `projects' `agenda' `todos'."
+   ;; `recents' `bookmarks' `projects' `agenda' `todos'.
+   ;; Example for 5 recent files and 7 projects: '((recents . 5) (projects . 7))
    ;; List sizes may be nil, in which case
    ;; `spacemacs-buffer-startup-lists-length' takes effect.
+   ;; (default nil)
    dotspacemacs-startup-lists '()
    ;; True if the home buffer should respond to resize events.
    dotspacemacs-startup-buffer-responsive t
@@ -138,12 +140,12 @@ values."
    ;; If non nil the cursor color matches the state color in GUI Emacs.
    dotspacemacs-colorize-cursor-according-to-state t
    ;; Default font, or prioritized list of fonts. `powerline-scale' allows to
-   ;; quickly tweak the mode-line size to make separators look not too crappy. Ⓐ
-   dotspacemacs-default-font '(("Fira Mono"
-                                :size 14
-                                :weight normal
-                                :width normal
-                                :powerline-scale 1.2))
+   ;; quickly tweak the mode-line size to make separators look not too crappy.
+   dotspacemacs-default-font '("Fira Mono"
+                               :size 14
+                               :weight normal
+                               :width normal
+                               :powerline-scale 1.5)
    ;; The leader key
    dotspacemacs-leader-key "SPC"
    ;; The key used for Emacs commands (M-x) (after pressing on the leader key).
@@ -158,7 +160,7 @@ values."
    ;; pressing `<leader> m`. Set it to `nil` to disable it. (default ",")
    dotspacemacs-major-mode-leader-key nil
    ;; Major mode leader key accessible in `emacs state' and `insert state'.
-   ;; (default "C-M-m)
+   ;; (default "C-M-m")
    dotspacemacs-major-mode-emacs-leader-key "C-M-m"
    ;; These variables control whether separate commands are bound in the GUI to
    ;; the key pairs C-i, TAB and C-m, RET.
@@ -313,16 +315,18 @@ you should place your code here."
   (spacemacs/toggle-automatic-symbol-highlight-on)
   (spacemacs/toggle-highlight-current-line-globally-off)
 
-  (defun my-force-diminish-ascii (orig-fun &rest args)
-    (let ((dotspacemacs-mode-line-unicode-symbols nil))
-      (apply orig-fun args)))
-  (advice-add 'spacemacs/diminish-hook :around #'my-force-diminish-ascii)
-  (advice-add 'spacemacs//prepare-diminish :around #'my-force-diminish-ascii)
+  ;; (defun my-force-diminish-ascii (orig-fun &rest args)
+  ;;   (let ((dotspacemacs-mode-line-unicode-symbols nil))
+  ;;     (apply orig-fun args)))
+  ;; (advice-add 'spacemacs/diminish-hook :around #'my-force-diminish-ascii)
+  ;; (advice-add 'spacemacs//prepare-diminish :around #'my-force-diminish-ascii)
 
   (defun my-update-spacemacs ()
     (interactive)
     (magit-status "~/.emacs.d")
     (magit-fetch "origin" nil))
+  (spacemacs/set-leader-keys "ous" 'my-update-spacemacs)
+  (spacemacs/set-leader-keys "oup" 'configuration-layer/update-packages)
 
   ;; (set-fontset-font "fontset-default" nil (font-spec :size 10))
   ;; (set-default-font (font-spec :size 13) t t)
@@ -399,7 +403,7 @@ you should place your code here."
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (magit-popup git-commit company-quickhelp yasnippet evil-easymotion flycheck helm helm-core projectile counsel smartparens move-text evil-unimpaired f magit with-editor zenburn-theme xterm-color ws-butler window-numbering which-key wgrep volatile-highlights vi-tilde-fringe uuidgen use-package toc-org stickyfunc-enhance srefactor spacemacs-theme spaceline solarized-theme smex smeargle shell-pop restart-emacs request rainbow-delimiters quelpa popwin persp-mode pdf-tools pcre2el paradox orgit org-projectile org-present org-pomodoro org-plus-contrib org-download org-bullets open-junk-file nlinum-relative neotree mwim multi-term monokai-theme molokai-theme magit-gitflow macrostep lorem-ipsum link-hint ivy-hydra info+ indent-guide ido-vertical-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation help-fns+ helm-make google-translate golden-ratio gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe git-gutter-fringe+ flyspell-correct-ivy flycheck-pos-tip flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu eshell-z eshell-prompt-extras esh-help elisp-slime-nav dumb-jump diff-hl define-word counsel-projectile company-statistics column-enforce-mode clean-aindent-mode auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile aggressive-indent adaptive-wrap ace-window ace-link ac-ispell))))
+    (swiper async magit-popup git-commit company-quickhelp yasnippet evil-easymotion flycheck helm helm-core projectile counsel smartparens move-text evil-unimpaired f magit with-editor zenburn-theme xterm-color ws-butler window-numbering which-key wgrep volatile-highlights vi-tilde-fringe uuidgen use-package toc-org stickyfunc-enhance srefactor spacemacs-theme spaceline solarized-theme smex smeargle shell-pop restart-emacs request rainbow-delimiters quelpa popwin persp-mode pdf-tools pcre2el paradox orgit org-projectile org-present org-pomodoro org-plus-contrib org-download org-bullets open-junk-file nlinum-relative neotree mwim multi-term monokai-theme molokai-theme magit-gitflow macrostep lorem-ipsum link-hint ivy-hydra info+ indent-guide ido-vertical-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation help-fns+ helm-make google-translate golden-ratio gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe git-gutter-fringe+ flyspell-correct-ivy flycheck-pos-tip flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu eshell-z eshell-prompt-extras esh-help elisp-slime-nav dumb-jump diff-hl define-word counsel-projectile company-statistics column-enforce-mode clean-aindent-mode auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile aggressive-indent adaptive-wrap ace-window ace-link ac-ispell))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
