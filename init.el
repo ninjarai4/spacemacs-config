@@ -50,7 +50,8 @@ values."
             shell-default-position 'bottom)
      spell-checking
      syntax-checking
-     version-control
+     (version-control :variables
+                      version-control-diff-tool 'git-gutter)
      semantic
      pdf-tools
      nlinum
@@ -143,7 +144,7 @@ values."
                                 :size 14
                                 :weight normal
                                 :width normal
-                                :powerline-scale 1.1))
+                                :powerline-scale 1.2))
    ;; The leader key
    dotspacemacs-leader-key "SPC"
    ;; The key used for Emacs commands (M-x) (after pressing on the leader key).
@@ -309,9 +310,15 @@ explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
   (global-company-mode)
 
-  (spacemacs/toggle-mode-line-minor-modes-off)
+  ;; (spacemacs/toggle-mode-line-minor-modes-off)
   (spacemacs/toggle-automatic-symbol-highlight-on)
   (spacemacs/toggle-highlight-current-line-globally-off)
+
+  (defun my-force-diminish-ascii (orig-fun &rest args)
+    (let ((dotspacemacs-mode-line-unicode-symbols nil))
+      (apply orig-fun args)))
+  (advice-add 'spacemacs/diminish-hook :around #'my-force-diminish-ascii)
+  (advice-add 'spacemacs//prepare-diminish :around #'my-force-diminish-ascii)
 
   (defun my-update-spacemacs ()
     (interactive)
@@ -359,8 +366,10 @@ you should place your code here."
            (q-func (key-binding [?q]))
            (q-doc (when q-func (car (s-split (concat "\n\\|" (sentence-end)) (documentation q-func) t)))))
       (cond (current-prefix-arg nil)
-            ((not (s-starts-with? "evil-" (format "%s" esc-func))) (call-interactively esc-func))
-            ((s-matches? "\\b\\(quit\\|exit\\)\\b" (string-join (list (format "%s" q-func) q-doc) " ")) (execute-kbd-macro [?q]))
+            ((not (s-starts-with? "evil-" (format "%s" esc-func)))
+             (call-interactively esc-func))
+            ((s-matches? "\\b\\(quit\\|exit\\)\\b" (string-join (list (format "%s" q-func) q-doc) " "))
+             (execute-kbd-macro [?q]))
             (t (execute-kbd-macro [?\C-g])))))
   (global-set-key [escape] 'my-universal-quit)
   (setq my-mb-quit-is-recur nil)
