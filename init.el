@@ -374,7 +374,7 @@ you should place your code here."
                             (lookup-key map key))
                            ((member 'meta (event-modifiers key)) `[,key])
                            (t `[,(event-convert-list `(meta ,key))]))
-                   nil)))))
+                   [escape])))))
     (define-key input-decode-map [escape] #'my-escape-intercept))
   (with-eval-after-load 'term
     (define-key term-raw-map [?\e ?\e] #'term-send-raw))
