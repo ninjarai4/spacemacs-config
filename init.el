@@ -48,10 +48,12 @@ values."
             shell-default-height 30
             shell-default-position 'bottom)
      spell-checking
-     syntax-checking
+     (syntax-checking :variables
+                      syntax-checking-use-original-bitmaps t)
      (version-control :variables
                       version-control-diff-tool 'git-gutter)
-     semantic
+     (semantic :disabled-for emacs-lisp)
+     ;; gtags
      pdf-tools
      nlinum
      )
@@ -142,10 +144,10 @@ values."
    ;; Default font, or prioritized list of fonts. `powerline-scale' allows to
    ;; quickly tweak the mode-line size to make separators look not too crappy.
    dotspacemacs-default-font '("Fira Mono"
-                               :size 14
+                               :size 13
                                :weight normal
                                :width normal
-                               :powerline-scale 1.5)
+                               :powerline-scale 1.2)
    ;; The leader key
    dotspacemacs-leader-key "SPC"
    ;; The key used for Emacs commands (M-x) (after pressing on the leader key).
@@ -299,7 +301,6 @@ executes.
  This function is mostly useful for variables that need to be set
 before packages are loaded. If you are unsure, you should try in setting them in
 `dotspacemacs/user-config' first."
-  (require 'cl-lib)
   )
 
 (defun dotspacemacs/user-config ()
@@ -309,37 +310,43 @@ layers configuration.
 This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
+  (require 'cl-lib)
+  (require 'dash)
+  (require 'bind-key)
+
   (global-company-mode)
 
-  ;; (spacemacs/toggle-mode-line-minor-modes-off)
   (spacemacs/toggle-automatic-symbol-highlight-on)
   (spacemacs/toggle-highlight-current-line-globally-off)
 
-  ;; (defun my-force-diminish-ascii (orig-fun &rest args)
-  ;;   (let ((dotspacemacs-mode-line-unicode-symbols nil))
-  ;;     (apply orig-fun args)))
-  ;; (advice-add 'spacemacs/diminish-hook :around #'my-force-diminish-ascii)
-  ;; (advice-add 'spacemacs//prepare-diminish :around #'my-force-diminish-ascii)
+  (defun my-force-diminish-ascii (orig-fun &rest args)
+    (let ((dotspacemacs-mode-line-unicode-symbols nil))
+      (apply orig-fun args)))
+  (advice-add #'spacemacs/diminish-hook :around #'my-force-diminish-ascii)
+  (advice-add #'spacemacs//prepare-diminish :around #'my-force-diminish-ascii)
 
   (defun my-update-spacemacs ()
     (interactive)
     (magit-status "~/.emacs.d")
     (magit-fetch "origin" nil))
-  (spacemacs/set-leader-keys "ous" 'my-update-spacemacs)
-  (spacemacs/set-leader-keys "oup" 'configuration-layer/update-packages)
+  (spacemacs/set-leader-keys "ous" #'my-update-spacemacs)
+  (defun my-update-packages ()
+    (interactive)
+    (view-buffer-other-window "*spacemacs*")
+    (configuration-layer/update-packages))
+  (spacemacs/set-leader-keys "oup" #'my-update-packages)
 
-  ;; (set-fontset-font "fontset-default" nil (font-spec :size 10))
-  ;; (set-default-font (font-spec :size 13) t t)
-  ;; (assq-delete-all 'font default-frame-alist)
-  ;; (push `(font . ,(font-spec )) default-frame-alist)
-  ;; (set-fontset-font t t (font-spec :size 10) )
+  (defun my-view-messages-buffer ()
+    (interactive)
+    (view-buffer (messages-buffer)))
+  (spacemacs/set-leader-keys "om" #'my-view-messages-buffer)
 
   (with-eval-after-load 'avy
-    (setq avy-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l ?\;
-                        ?q ?w ?e ?r ?u ?i ?o ?p
+    (setq avy-style 'at)
+    (setq avy-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l ?\; ?\'
+                        ?\t ?q ?w ?e ?r ?u ?i ?o ?p ?\[
                         ?c ?v ?n ?m ?\s))
-    (advice-add 'avy--key-to-char :around (lambda (orig-fun c) (if (eq ?\s c) ?␣ (apply orig-fun (list c)))))
-    )
+    (advice-add #'avy--key-to-char :around (lambda (orig-fun c) (case c (?\s ?␣) (?\t ?→) (t (funcall orig-fun c))))))
 
   (with-eval-after-load 'powerline
     (setq powerline-default-separator 'butt))
@@ -347,22 +354,30 @@ you should place your code here."
   ;; escape key nonsense
   (with-eval-after-load 'evil
     (setq evil-esc-delay .25)
-    (defun my-escape-intercept (&optional prompt)
-      (if executing-kbd-macro [escape] (evil-esc [?\e])))
+    (defun my-escape-intercept (_)
+      (if (or executing-kbd-macro evil-inhibit-esc) [escape] (evil-esc [?\e])))
     (defun evil-esc (map)
-      (if (and (not evil-inhibit-esc) (not executing-kbd-macro) (sit-for evil-esc-delay))
-          (prog1 [escape]
-            (when defining-kbd-macro
-              (end-kbd-macro)
-              (setq last-kbd-macro (vconct last-kbd-macro [escape]))
-              (start-kbd-macro t t)))
-        map))
-    (define-key input-decode-map [escape] 'my-escape-intercept)
-    (define-key key-translation-map [?\e escape] [?\e ?\e])
-    (define-key key-translation-map [?\e ?\e escape] [?\e ?\e ?\e])
-    )
+      (let ((keys (this-single-command-keys)))
+        (cond ((or executing-kbd-macro evil-inhibit-esc) map)
+              ((= 1 (length keys))
+               (if (sit-for evil-esc-delay)
+                   (prog1 [escape]
+                     (when defining-kbd-macro
+                       (end-kbd-macro)
+                       (setq last-kbd-macro (vconcat last-kbd-macro [escape]))
+                       (start-kbd-macro t t)))
+                 map))
+              (t (if-let ((key (read-event nil t evil-esc-delay))
+                          (key (if (eq 'escape key) ?\e key)))
+                     (cond ((and (keymapp map)
+                                 (not (eq 'default (lookup-key (append map '((t . default))) `[,key] t))))
+                            (lookup-key map key))
+                           ((member 'meta (event-modifiers key)) `[,key])
+                           (t `[,(event-convert-list `(meta ,key))]))
+                   nil)))))
+    (define-key input-decode-map [escape] #'my-escape-intercept))
   (with-eval-after-load 'term
-    (define-key term-raw-map [?\e ?\e] 'term-send-raw))
+    (define-key term-raw-map [?\e ?\e] #'term-send-raw))
   (defun my-universal-quit ()
     (interactive)
     (let* ((esc-func (evil-escape-func))
@@ -374,11 +389,8 @@ you should place your code here."
             ((s-matches? "\\b\\(quit\\|exit\\)\\b" (string-join (list (format "%s" q-func) q-doc) " "))
              (execute-kbd-macro [?q]))
             (t (execute-kbd-macro [?\C-g])))))
-  (global-set-key [escape] 'my-universal-quit)
-  (setq my-mb-quit-is-recur nil)
-  (bind-key* [escape] (lambda () (interactive) (if current-prefix-arg
-                                                   (let ((my-mb-quit-is-recur t)) (execute-kbd-macro [escape]))
-                                                 (minibuffer-keyboard-quit))) (and (not my-mb-quit-is-recur) (active-minibuffer-window)))
+  (bind-key [escape] #'my-universal-quit global-map (= 1 (length (this-command-keys))))
+  (bind-key* [escape] #'minibuffer-keyboard-quit (and (not prefix-arg) (= 1 (length (this-command-keys))) (active-minibuffer-window)))
   (evil-make-intercept-map override-global-map)
   (define-key query-replace-map [?\e] 'quit)
   (define-key query-replace-map [escape] 'quit)
@@ -387,14 +399,12 @@ you should place your code here."
     (defun my-evilem-define-advice (orig-fun &rest args)
       (let ((i (-find-index (lambda (x) (eq x :scope)) args)))
         (apply orig-fun (if i (-remove-at-indices (list i (1+ i)) args) args))))
-    (advice-add 'evilem-define :around #'my-evilem-define-advice)
+    (advice-add #'evilem-define :around #'my-evilem-define-advice)
     (evilem-default-keybindings "ESC")
-    (advice-remove 'evilem-define #'my-evilem-define-advice)
-    (define-key evil-motion-state-map [?\e ?/] 'swiper)
+    (advice-remove #'evilem-define #'my-evilem-define-advice)
+    (define-key evil-motion-state-map [?\e ?/] #'swiper)
     )
   )
-
-
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -403,7 +413,7 @@ you should place your code here."
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (swiper async magit-popup git-commit company-quickhelp yasnippet evil-easymotion flycheck helm helm-core projectile counsel smartparens move-text evil-unimpaired f magit with-editor zenburn-theme xterm-color ws-butler window-numbering which-key wgrep volatile-highlights vi-tilde-fringe uuidgen use-package toc-org stickyfunc-enhance srefactor spacemacs-theme spaceline solarized-theme smex smeargle shell-pop restart-emacs request rainbow-delimiters quelpa popwin persp-mode pdf-tools pcre2el paradox orgit org-projectile org-present org-pomodoro org-plus-contrib org-download org-bullets open-junk-file nlinum-relative neotree mwim multi-term monokai-theme molokai-theme magit-gitflow macrostep lorem-ipsum link-hint ivy-hydra info+ indent-guide ido-vertical-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation help-fns+ helm-make google-translate golden-ratio gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe git-gutter-fringe+ flyspell-correct-ivy flycheck-pos-tip flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu eshell-z eshell-prompt-extras esh-help elisp-slime-nav dumb-jump diff-hl define-word counsel-projectile company-statistics column-enforce-mode clean-aindent-mode auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile aggressive-indent adaptive-wrap ace-window ace-link ac-ispell))))
+    (undo-tree flyspell-correct ivy ggtags swiper async magit-popup git-commit company-quickhelp yasnippet evil-easymotion flycheck helm helm-core projectile counsel smartparens move-text evil-unimpaired f magit with-editor zenburn-theme xterm-color ws-butler window-numbering which-key wgrep volatile-highlights vi-tilde-fringe uuidgen use-package toc-org stickyfunc-enhance srefactor spacemacs-theme spaceline solarized-theme smex smeargle shell-pop restart-emacs request rainbow-delimiters quelpa popwin persp-mode pdf-tools pcre2el paradox orgit org-projectile org-present org-pomodoro org-plus-contrib org-download org-bullets open-junk-file nlinum-relative neotree mwim multi-term monokai-theme molokai-theme magit-gitflow macrostep lorem-ipsum link-hint ivy-hydra info+ indent-guide ido-vertical-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation help-fns+ helm-make google-translate golden-ratio gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe git-gutter-fringe+ flyspell-correct-ivy flycheck-pos-tip flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu eshell-z eshell-prompt-extras esh-help elisp-slime-nav dumb-jump diff-hl define-word counsel-projectile company-statistics column-enforce-mode clean-aindent-mode auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile aggressive-indent adaptive-wrap ace-window ace-link ac-ispell))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
