@@ -121,12 +121,11 @@ values."
    ;; List of items to show in startup buffer or an association list of
    ;; the form `(list-type . list-size)`. If nil then it is disabled.
    ;; Possible values for list-type are:
-   ;; `recents' `bookmarks' `projects' `agenda' `todos'.
-   ;; Example for 5 recent files and 7 projects: '((recents . 5) (projects . 7))
+   ;; `recents' `bookmarks' `projects' `agenda' `todos'."
    ;; List sizes may be nil, in which case
    ;; `spacemacs-buffer-startup-lists-length' takes effect.
-   ;; (default nil)
-   dotspacemacs-startup-lists '()
+   dotspacemacs-startup-lists '((recents . 5)
+                                (projects . 7))
    ;; True if the home buffer should respond to resize events.
    dotspacemacs-startup-buffer-responsive t
    ;; Default major mode of the scratch buffer (default `text-mode')
@@ -318,6 +317,7 @@ you should place your code here."
 
   (spacemacs/toggle-automatic-symbol-highlight-on)
   (spacemacs/toggle-highlight-current-line-globally-off)
+  ;; (persp-activate (persp-get-by-name "Default"))
 
   (defun my-force-diminish-ascii (orig-fun &rest args)
     (let ((dotspacemacs-mode-line-unicode-symbols nil))
@@ -327,12 +327,13 @@ you should place your code here."
 
   (defun my-update-spacemacs ()
     (interactive)
-    (magit-status "~/.emacs.d")
+    (magit-status user-emacs-directory)
     (magit-fetch "origin" nil))
   (spacemacs/set-leader-keys "ous" #'my-update-spacemacs)
   (defun my-update-packages ()
     (interactive)
-    (view-buffer-other-window "*spacemacs*")
+    (unless (eq (current-buffer) (get-buffer "*spacemacs*"))
+      (view-buffer-other-window "*spacemacs*"))
     (configuration-layer/update-packages))
   (spacemacs/set-leader-keys "oup" #'my-update-packages)
 
@@ -349,7 +350,7 @@ you should place your code here."
     (advice-add #'avy--key-to-char :around (lambda (orig-fun c) (case c (?\s ?␣) (?\t ?→) (t (funcall orig-fun c))))))
 
   (with-eval-after-load 'powerline
-    (setq powerline-default-separator 'butt))
+    (setq powerline-default-separator 'arrow))
 
   ;; escape key nonsense
   (with-eval-after-load 'evil
@@ -370,7 +371,7 @@ you should place your code here."
               (t (if-let ((key (read-event nil t evil-esc-delay))
                           (key (if (eq 'escape key) ?\e key)))
                      (cond ((and (keymapp map)
-                                 (not (eq 'default (lookup-key (append map '((t . default))) `[,key] t))))
+                                 (not (eq 'default (lookup-key (make-composed-keymap `(,map (keymap (t . default)))) `[,key] t))))
                             (lookup-key map key))
                            ((member 'meta (event-modifiers key)) `[,key])
                            (t `[,(event-convert-list `(meta ,key))]))
@@ -382,13 +383,13 @@ you should place your code here."
     (interactive)
     (let* ((esc-func (evil-escape-func))
            (q-func (key-binding [?q]))
-           (q-doc (when q-func (car (s-split (concat "\n\\|" (sentence-end)) (documentation q-func) t)))))
+           (q-doc (when (functionp q-func) (car (s-split (concat "\n\\|" (sentence-end)) (documentation q-func) t)))))
       (cond (current-prefix-arg nil)
             ((not (s-starts-with? "evil-" (format "%s" esc-func)))
              (call-interactively esc-func))
             ((s-matches? "\\b\\(quit\\|exit\\)\\b" (string-join (list (format "%s" q-func) q-doc) " "))
-             (execute-kbd-macro [?q]))
-            (t (execute-kbd-macro [?\C-g])))))
+             (call-interactively q-func))
+            (t (call-interactively #'keyboard-quit)))))
   (bind-key [escape] #'my-universal-quit global-map (= 1 (length (this-command-keys))))
   (bind-key* [escape] #'minibuffer-keyboard-quit (and (not prefix-arg) (= 1 (length (this-command-keys))) (active-minibuffer-window)))
   (evil-make-intercept-map override-global-map)
@@ -406,6 +407,8 @@ you should place your code here."
     )
   )
 
+;; Do not write anything past this comment. This is where Emacs will
+;; auto-generate custom variable definitions.
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -413,7 +416,7 @@ you should place your code here."
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (undo-tree flyspell-correct ivy ggtags swiper async magit-popup git-commit company-quickhelp yasnippet evil-easymotion flycheck helm helm-core projectile counsel smartparens move-text evil-unimpaired f magit with-editor zenburn-theme xterm-color ws-butler window-numbering which-key wgrep volatile-highlights vi-tilde-fringe uuidgen use-package toc-org stickyfunc-enhance srefactor spacemacs-theme spaceline solarized-theme smex smeargle shell-pop restart-emacs request rainbow-delimiters quelpa popwin persp-mode pdf-tools pcre2el paradox orgit org-projectile org-present org-pomodoro org-plus-contrib org-download org-bullets open-junk-file nlinum-relative neotree mwim multi-term monokai-theme molokai-theme magit-gitflow macrostep lorem-ipsum link-hint ivy-hydra info+ indent-guide ido-vertical-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation help-fns+ helm-make google-translate golden-ratio gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe git-gutter-fringe+ flyspell-correct-ivy flycheck-pos-tip flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu eshell-z eshell-prompt-extras esh-help elisp-slime-nav dumb-jump diff-hl define-word counsel-projectile company-statistics column-enforce-mode clean-aindent-mode auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile aggressive-indent adaptive-wrap ace-window ace-link ac-ispell))))
+    (powerline ivy-purpose window-purpose imenu-list anzu undo-tree flyspell-correct ivy ggtags swiper async magit-popup git-commit company-quickhelp yasnippet evil-easymotion flycheck helm helm-core projectile counsel smartparens move-text evil-unimpaired f magit with-editor zenburn-theme xterm-color ws-butler window-numbering which-key wgrep volatile-highlights vi-tilde-fringe uuidgen use-package toc-org stickyfunc-enhance srefactor spacemacs-theme spaceline solarized-theme smex smeargle shell-pop restart-emacs request rainbow-delimiters quelpa popwin persp-mode pdf-tools pcre2el paradox orgit org-projectile org-present org-pomodoro org-plus-contrib org-download org-bullets open-junk-file nlinum-relative neotree mwim multi-term monokai-theme molokai-theme magit-gitflow macrostep lorem-ipsum link-hint ivy-hydra info+ indent-guide ido-vertical-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation help-fns+ helm-make google-translate golden-ratio gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe git-gutter-fringe+ flyspell-correct-ivy flycheck-pos-tip flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu eshell-z eshell-prompt-extras esh-help elisp-slime-nav dumb-jump diff-hl define-word counsel-projectile company-statistics column-enforce-mode clean-aindent-mode auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile aggressive-indent adaptive-wrap ace-window ace-link ac-ispell))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
