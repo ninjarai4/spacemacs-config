@@ -52,9 +52,11 @@ values."
                       syntax-checking-use-original-bitmaps t)
      (version-control :variables
                       version-control-diff-tool 'git-gutter)
-     (semantic :disabled-for emacs-lisp)
+     (semantic
+      ;; :disabled-for emacs-lisp
+      )
      ;; gtags
-     pdf-tools
+     ;; pdf-tools
      nlinum
      )
    ;; List of additional packages that will be installed without being
@@ -134,10 +136,11 @@ values."
    ;; Press <SPC> T n to cycle to the next theme in the list (works great
    ;; with 2 themes variants, one dark and one light)
    dotspacemacs-themes '(solarized-dark
-                         zenburn
-                         monokai
-                         molokai
-                         spacemacs-dark)
+                         ;; zenburn
+                         ;; monokai
+                         ;; molokai
+                         ;; spacemacs-dark
+                         )
    ;; If non nil the cursor color matches the state color in GUI Emacs.
    dotspacemacs-colorize-cursor-according-to-state t
    ;; Default font, or prioritized list of fonts. `powerline-scale' allows to
@@ -287,7 +290,7 @@ values."
    dotspacemacs-default-package-repository nil
    ;; Delete whitespace while saving buffer. Possible values are `all'
    ;; to aggressively delete empty line and long sequences of whitespace,
-   ;; `trailing' to delete only the whitespace at end of lines, `changed'to
+   ;; `trailing' to delete only the whitespace at end of lines, `changed' to
    ;; delete only whitespace for changed lines or `nil' to disable cleanup.
    ;; (default nil)
    dotspacemacs-whitespace-cleanup nil
@@ -300,6 +303,7 @@ executes.
  This function is mostly useful for variables that need to be set
 before packages are loaded. If you are unsure, you should try in setting them in
 `dotspacemacs/user-config' first."
+  (load (setq custom-file (concat dotspacemacs-directory "custom.el")))
   )
 
 (defun dotspacemacs/user-config ()
@@ -309,15 +313,18 @@ layers configuration.
 This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
-  (require 'cl-lib)
-  (require 'dash)
-  (require 'bind-key)
+  (use-package "cl-lib" :defer t)
 
   (global-company-mode)
-
   (spacemacs/toggle-automatic-symbol-highlight-on)
   (spacemacs/toggle-highlight-current-line-globally-off)
-  ;; (persp-activate (persp-get-by-name "Default"))
+
+  (eval-after-load 'semantic
+    (add-hook 'semantic-mode-hook
+              (lambda ()
+                (dolist (x (default-value 'completion-at-point-functions))
+                  (when (string-prefix-p "semantic-" (symbol-name x))
+                    (remove-hook 'completion-at-point-functions x))))))
 
   (defun my-force-diminish-ascii (orig-fun &rest args)
     (let ((dotspacemacs-mode-line-unicode-symbols nil))
@@ -336,90 +343,69 @@ you should place your code here."
       (view-buffer-other-window "*spacemacs*"))
     (configuration-layer/update-packages))
   (spacemacs/set-leader-keys "oup" #'my-update-packages)
-
   (defun my-view-messages-buffer ()
     (interactive)
     (view-buffer (messages-buffer)))
   (spacemacs/set-leader-keys "om" #'my-view-messages-buffer)
+  (spacemacs/set-leader-keys ":" #'evil-ex)
 
-  (with-eval-after-load 'avy
-    (setq avy-style 'at)
-    (setq avy-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l ?\; ?\'
-                        ?\t ?q ?w ?e ?r ?u ?i ?o ?p ?\[
-                        ?c ?v ?n ?m ?\s))
-    (advice-add #'avy--key-to-char :around (lambda (orig-fun c) (case c (?\s ?␣) (?\t ?→) (t (funcall orig-fun c))))))
+  (setq avy-style 'at)
+  (setq avy-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l ?\; ?\'
+                      ?\t ?q ?w ?e ?r ?u ?i ?o ?p ?\[
+                      ?c ?v ?n ?m ?\s))
+  (advice-add #'avy--key-to-char :around (lambda (orig-fun c) (case c (?\s ?␣) (?\t ?→) (t (funcall orig-fun c)))))
 
-  (with-eval-after-load 'powerline
-    (setq powerline-default-separator 'arrow))
+  (setq powerline-default-separator 'arrow)
 
   ;; escape key nonsense
-  (with-eval-after-load 'evil
-    (setq evil-esc-delay .25)
-    (defun my-escape-intercept (_)
-      (if (or executing-kbd-macro evil-inhibit-esc) [escape] (evil-esc [?\e])))
-    (defun evil-esc (map)
-      (let ((keys (this-single-command-keys)))
-        (cond ((or executing-kbd-macro evil-inhibit-esc) map)
-              ((= 1 (length keys))
-               (if (sit-for evil-esc-delay)
-                   (prog1 [escape]
-                     (when defining-kbd-macro
-                       (end-kbd-macro)
-                       (setq last-kbd-macro (vconcat last-kbd-macro [escape]))
-                       (start-kbd-macro t t)))
-                 map))
-              (t (if-let ((key (read-event nil t evil-esc-delay))
-                          (key (if (eq 'escape key) ?\e key)))
-                     (cond ((and (keymapp map)
-                                 (not (eq 'default (lookup-key (make-composed-keymap `(,map (keymap (t . default)))) `[,key] t))))
-                            (lookup-key map key))
-                           ((member 'meta (event-modifiers key)) `[,key])
-                           (t `[,(event-convert-list `(meta ,key))]))
-                   [escape])))))
-    (define-key input-decode-map [escape] #'my-escape-intercept))
+  (setq evil-esc-delay .25)
+  (defun my-escape-intercept (_)
+    (if (or executing-kbd-macro evil-inhibit-esc) [escape] (evil-esc [?\e])))
+  (defun evil-esc (map)
+    (let ((len (length (this-single-command-keys))) (key nil))
+      (cond ((or executing-kbd-macro evil-inhibit-esc) map)
+            ((and (= 1 len) (sit-for evil-esc-delay))
+             (when defining-kbd-macro
+               (end-kbd-macro)
+               (setq last-kbd-macro (vconcat last-kbd-macro [escape]))
+               (start-kbd-macro t t))
+             [escape])
+            ((= 1 len) map)
+            ((setq key (read-event nil t evil-esc-delay))
+             (when (eq 'escape key) (setq key ?\e))
+             (cond ((and (keymapp map) (not (eq 'd (lookup-key (make-composed-keymap `(,map (keymap (t . d)))) `[,key] t))))
+                    (lookup-key map key))
+                   ((member 'meta (event-modifiers key)) `[,key])
+                   (t `[,(event-convert-list `(meta ,key))])))
+            (t [escape]))))
+  (define-key input-decode-map [escape] #'my-escape-intercept)
+
+  (defvar my-escape-recur nil)
+  (defun my-overriding-escape (_)
+    (interactive)
+    (if-let (my-escape-recur (not (or my-escape-recur (< 1 (length (this-command-keys))))))
+        (let* ((normal-func (key-binding [escape]))
+               (esc-func (evil-escape-func))
+               (q-func (key-binding [?q]))
+               (q-doc (when (functionp q-func) (car (split-string (documentation q-func) (concat "\n\\|" (sentence-end)) t)))))
+          (cond (prefix-arg #'keyboard-quit)
+                ((active-minibuffer-window) #'minibuffer-keyboard-quit)
+                ((string-match-p "\\b\\(quit\\|exit\\)\\b" (format "%s %s" q-func q-doc)) q-func)
+                (normal-func normal-func)
+                ((string-prefix-p "evil-" (format "%s" esc-func)) #'keyboard-quit)
+                (t esc-func)))))
+  (define-key override-global-map [escape] `(menu-item "" nil :filter ,#'my-overriding-escape))
+  (evil-make-intercept-map override-global-map)
+
+  (defun my-evilem-define-advice (orig-fun &rest args)
+    (let ((i (or (cl-position :scope args) (length args))))
+      (apply orig-fun (cl-remove-if-not #'ignore args :start i :count 2))))
+  (advice-add #'evilem-define :around #'my-evilem-define-advice)
+  (evilem-default-keybindings "ESC")
+  (define-key evil-motion-state-map [?\e ?/] #'swiper)
   (with-eval-after-load 'term
     (define-key term-raw-map [?\e ?\e] #'term-send-raw))
-  (defun my-universal-quit ()
-    (interactive)
-    (let* ((esc-func (evil-escape-func))
-           (q-func (key-binding [?q]))
-           (q-doc (when (functionp q-func) (car (s-split (concat "\n\\|" (sentence-end)) (documentation q-func) t)))))
-      (cond (current-prefix-arg nil)
-            ((not (s-starts-with? "evil-" (format "%s" esc-func)))
-             (call-interactively esc-func))
-            ((s-matches? "\\b\\(quit\\|exit\\)\\b" (string-join (list (format "%s" q-func) q-doc) " "))
-             (call-interactively q-func))
-            (t (call-interactively #'keyboard-quit)))))
-  (bind-key [escape] #'my-universal-quit global-map (= 1 (length (this-command-keys))))
-  (bind-key* [escape] #'minibuffer-keyboard-quit (and (not prefix-arg) (= 1 (length (this-command-keys))) (active-minibuffer-window)))
-  (evil-make-intercept-map override-global-map)
   (define-key query-replace-map [?\e] 'quit)
   (define-key query-replace-map [escape] 'quit)
 
-  (with-eval-after-load 'evil
-    (defun my-evilem-define-advice (orig-fun &rest args)
-      (let ((i (-find-index (lambda (x) (eq x :scope)) args)))
-        (apply orig-fun (if i (-remove-at-indices (list i (1+ i)) args) args))))
-    (advice-add #'evilem-define :around #'my-evilem-define-advice)
-    (evilem-default-keybindings "ESC")
-    (advice-remove #'evilem-define #'my-evilem-define-advice)
-    (define-key evil-motion-state-map [?\e ?/] #'swiper)
-    )
-  )
-
-;; Do not write anything past this comment. This is where Emacs will
-;; auto-generate custom variable definitions.
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   (quote
-    (powerline ivy-purpose window-purpose imenu-list anzu undo-tree flyspell-correct ivy ggtags swiper async magit-popup git-commit company-quickhelp yasnippet evil-easymotion flycheck helm helm-core projectile counsel smartparens move-text evil-unimpaired f magit with-editor zenburn-theme xterm-color ws-butler window-numbering which-key wgrep volatile-highlights vi-tilde-fringe uuidgen use-package toc-org stickyfunc-enhance srefactor spacemacs-theme spaceline solarized-theme smex smeargle shell-pop restart-emacs request rainbow-delimiters quelpa popwin persp-mode pdf-tools pcre2el paradox orgit org-projectile org-present org-pomodoro org-plus-contrib org-download org-bullets open-junk-file nlinum-relative neotree mwim multi-term monokai-theme molokai-theme magit-gitflow macrostep lorem-ipsum link-hint ivy-hydra info+ indent-guide ido-vertical-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation help-fns+ helm-make google-translate golden-ratio gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe git-gutter-fringe+ flyspell-correct-ivy flycheck-pos-tip flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu eshell-z eshell-prompt-extras esh-help elisp-slime-nav dumb-jump diff-hl define-word counsel-projectile company-statistics column-enforce-mode clean-aindent-mode auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile aggressive-indent adaptive-wrap ace-window ace-link ac-ispell))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+  (message "finished user-config ok"))
