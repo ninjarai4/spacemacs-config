@@ -52,11 +52,8 @@ values."
                       syntax-checking-use-original-bitmaps t)
      (version-control :variables
                       version-control-diff-tool 'git-gutter)
-     (semantic
-      ;; :disabled-for emacs-lisp
-      )
-     ;; gtags
-     ;; pdf-tools
+     semantic
+     pdf-tools
      nlinum
      )
    ;; List of additional packages that will be installed without being
@@ -290,7 +287,7 @@ values."
    dotspacemacs-default-package-repository nil
    ;; Delete whitespace while saving buffer. Possible values are `all'
    ;; to aggressively delete empty line and long sequences of whitespace,
-   ;; `trailing' to delete only the whitespace at end of lines, `changed' to
+   ;; `trailing' to delete only the whitespace at end of lines, `changed'to
    ;; delete only whitespace for changed lines or `nil' to disable cleanup.
    ;; (default nil)
    dotspacemacs-whitespace-cleanup nil
@@ -304,7 +301,7 @@ executes.
 before packages are loaded. If you are unsure, you should try in setting them in
 `dotspacemacs/user-config' first."
   (load (setq custom-file (concat dotspacemacs-directory "custom.el")))
-  )
+  (message "finished user-init ok"))
 
 (defun dotspacemacs/user-config ()
   "Configuration function for user code.
@@ -318,6 +315,7 @@ you should place your code here."
   (global-company-mode)
   (spacemacs/toggle-automatic-symbol-highlight-on)
   (spacemacs/toggle-highlight-current-line-globally-off)
+  (setq org-bullets-bullet-list '("•"))
 
   (eval-after-load 'semantic
     (add-hook 'semantic-mode-hook
@@ -357,6 +355,16 @@ you should place your code here."
 
   (setq powerline-default-separator 'arrow)
 
+  (defun my-do-in-normal-state ()
+    (interactive)
+    (evil-normal-state)
+    (call-interactively (key-binding (this-single-command-keys))))
+  (evil-global-set-key 'hybrid [down-mouse-1] #'my-do-in-normal-state)
+  (evil-global-set-key 'hybrid [down] #'my-do-in-normal-state)
+  (evil-global-set-key 'hybrid [up] #'my-do-in-normal-state)
+  (evil-global-set-key 'hybrid [left] #'my-do-in-normal-state)
+  (evil-global-set-key 'hybrid [right] #'my-do-in-normal-state)
+
   ;; escape key nonsense
   (setq evil-esc-delay .25)
   (defun my-escape-intercept (_)
@@ -373,27 +381,24 @@ you should place your code here."
             ((= 1 len) map)
             ((setq key (read-event nil t evil-esc-delay))
              (when (eq 'escape key) (setq key ?\e))
-             (cond ((and (keymapp map) (not (eq 'd (lookup-key (make-composed-keymap `(,map (keymap (t . d)))) `[,key] t))))
-                    (lookup-key map key))
-                   ((member 'meta (event-modifiers key)) `[,key])
-                   (t `[,(event-convert-list `(meta ,key))])))
-            (t [escape]))))
+             (if (and (keymapp map) (not (eq t (lookup-key `(keymap ,map (t . t)) `[,key] t))))
+                 (lookup-key map key)
+               `[,(event-convert-list `(meta ,key))]))
+            ([escape]))))
   (define-key input-decode-map [escape] #'my-escape-intercept)
 
   (defvar my-escape-recur nil)
   (defun my-overriding-escape (_)
     (interactive)
     (if-let (my-escape-recur (not (or my-escape-recur (< 1 (length (this-command-keys))))))
-        (let* ((normal-func (key-binding [escape]))
-               (esc-func (evil-escape-func))
-               (q-func (key-binding [?q]))
-               (q-doc (when (functionp q-func) (car (split-string (documentation q-func) (concat "\n\\|" (sentence-end)) t)))))
+        (let* ((qfunc (key-binding [?q]))
+               (qdoc (when (functionp qfunc) (car (split-string (documentation qfunc) (concat "\\s-*\n\\s-*\\|" (sentence-end)) t)))))
           (cond (prefix-arg #'keyboard-quit)
                 ((active-minibuffer-window) #'minibuffer-keyboard-quit)
-                ((string-match-p "\\b\\(quit\\|exit\\)\\b" (format "%s %s" q-func q-doc)) q-func)
-                (normal-func normal-func)
-                ((string-prefix-p "evil-" (format "%s" esc-func)) #'keyboard-quit)
-                (t esc-func)))))
+                ((string-match-p "\\b\\(quit\\|exit\\)\\b" (format "%s %s" qfunc qdoc)) qfunc)
+                ((key-binding [escape]))
+                ((string-prefix-p "evil-" (symbol-name (evil-escape-func))) #'keyboard-quit)
+                ((evil-escape-func))))))
   (define-key override-global-map [escape] `(menu-item "" nil :filter ,#'my-overriding-escape))
   (evil-make-intercept-map override-global-map)
 
