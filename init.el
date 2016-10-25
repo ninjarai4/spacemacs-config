@@ -329,7 +329,13 @@ you should place your code here."
   (spacemacs/toggle-highlight-current-line-globally-off)
   (spacemacs/toggle-display-time-on)
   (setq org-bullets-bullet-list '("•"))
+
   (global-prettify-symbols-mode)
+  (add-hook 'prog-mode-hook
+            (lambda () (mapc (lambda (x) (push x prettify-symbols-alist)) '(("lambda" ?λ)
+                                                                  ("<=" . ?≤)
+                                                                  (">=" . ?≥)
+                                                                  ("!=" . ?≠)))))
 
   (setcdr (assoc 'which-key-mode spacemacs--diminished-minor-modes) '(""))
   (setcdr (assoc 'hybrid-mode spacemacs--diminished-minor-modes) '(""))
@@ -337,7 +343,8 @@ you should place your code here."
   (with-eval-after-load 'yasnippet
     (setcdr (assoc 'yas-minor-mode spacemacs--diminished-minor-modes) '("")))
 
-  (defface my-ahs-dummy-face nil "")
+  (defface my-dummy-face nil "")
+
   (defun my-exclude-point-from-search (orig-fun symbol search-range)
     (let ((beg (car search-range))
           (end (cdr search-range))
@@ -350,7 +357,9 @@ you should place your code here."
   (advice-add #'ahs-search-symbol :around #'my-exclude-point-from-search)
   (with-eval-after-load 'auto-highlight-symbol
     (dolist (range ahs-range-plugin-list)
-      (setcdr (assoc 'face (symbol-value range)) 'my-ahs-dummy-face)))
+      (setcdr (assoc 'face (symbol-value range)) 'my-dummy-face))
+    (face-spec-set 'ahs-face '((t :underline t)) 'face-defface-spec)
+    (face-spec-set 'ahs-definition-face '((t :box t)) 'face-defface-spec))
 
   (with-eval-after-load 'semantic
     (add-hook 'semantic-mode-hook
