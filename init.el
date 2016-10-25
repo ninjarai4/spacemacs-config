@@ -55,6 +55,7 @@ values."
      semantic
      pdf-tools
      nlinum
+     imenu-list
      )
    ;; List of additional packages that will be installed without being
    ;; wrapped in a layer. If you need some configuration for these
@@ -132,10 +133,11 @@ values."
    ;; List of themes, the first of the list is loaded when spacemacs starts.
    ;; Press <SPC> T n to cycle to the next theme in the list (works great
    ;; with 2 themes variants, one dark and one light)
-   dotspacemacs-themes '(solarized-dark
-                         ;; zenburn
+   dotspacemacs-themes '(
+                         ;; gruvbox
+                         ;; solarized-dark
+                         zenburn
                          ;; monokai
-                         ;; molokai
                          ;; spacemacs-dark
                          )
    ;; If non nil the cursor color matches the state color in GUI Emacs.
@@ -224,6 +226,12 @@ values."
    ;; right; if there is insufficient space it displays it at the bottom.
    ;; (default 'bottom)
    dotspacemacs-which-key-position 'bottom
+   ;; Control where `switch-to-buffer' displays the buffer. If nil,
+   ;; `switch-to-buffer' displays the buffer in the current window even if
+   ;; another same-purpose window is available. If non nil, `switch-to-buffer'
+   ;; displays the buffer in a same-purpose window even if the buffer can be
+   ;; displayed in the current window. (default nil)
+   dotspacemacs-switch-to-buffer-prefers-purpose nil
    ;; If non nil a progress bar is displayed when spacemacs is loading. This
    ;; may increase the boot time on some systems and emacs builds, set it to
    ;; nil to boost the loading time. (default t)
@@ -290,7 +298,7 @@ values."
    ;; `trailing' to delete only the whitespace at end of lines, `changed'to
    ;; delete only whitespace for changed lines or `nil' to disable cleanup.
    ;; (default nil)
-   dotspacemacs-whitespace-cleanup nil
+   dotspacemacs-whitespace-cleanup 'changed
    ))
 
 (defun dotspacemacs/user-init ()
@@ -300,7 +308,10 @@ executes.
  This function is mostly useful for variables that need to be set
 before packages are loaded. If you are unsure, you should try in setting them in
 `dotspacemacs/user-config' first."
-  (load (setq custom-file (concat dotspacemacs-directory "custom.el")))
+  (setq custom-file (concat dotspacemacs-directory "custom.el"))
+  (unless (file-exists-p custom-file)
+    (write-region "" nil custom-file))
+  (load custom-file)
   (message "finished user-init ok"))
 
 (defun dotspacemacs/user-config ()
@@ -310,14 +321,38 @@ layers configuration.
 This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
-  (use-package "cl-lib" :defer t)
+  (require 'cl-lib)
+  (require 'avy)
 
   (global-company-mode)
   (spacemacs/toggle-automatic-symbol-highlight-on)
   (spacemacs/toggle-highlight-current-line-globally-off)
+  (spacemacs/toggle-display-time-on)
   (setq org-bullets-bullet-list '("•"))
+  (global-prettify-symbols-mode)
 
-  (eval-after-load 'semantic
+  (setcdr (assoc 'which-key-mode spacemacs--diminished-minor-modes) '(""))
+  (setcdr (assoc 'hybrid-mode spacemacs--diminished-minor-modes) '(""))
+  (setcdr (assoc 'company-mode spacemacs--diminished-minor-modes) '(""))
+  (with-eval-after-load 'yasnippet
+    (setcdr (assoc 'yas-minor-mode spacemacs--diminished-minor-modes) '("")))
+
+  (defface my-ahs-dummy-face nil "")
+  (defun my-exclude-point-from-search (orig-fun symbol search-range)
+    (let ((beg (car search-range))
+          (end (cdr search-range))
+          (befp (max (- (point) 1) (point-min)))
+          (aftp (min (+ (point) 1) (point-max))))
+      (cond ((= beg end) nil)
+            ((<= beg (point) end) (nconc (funcall orig-fun symbol (cons beg befp))
+                                         (funcall orig-fun symbol (cons aftp end))))
+            ((funcall orig-fun symbol search-range)))))
+  (advice-add #'ahs-search-symbol :around #'my-exclude-point-from-search)
+  (with-eval-after-load 'auto-highlight-symbol
+    (dolist (range ahs-range-plugin-list)
+      (setcdr (assoc 'face (symbol-value range)) 'my-ahs-dummy-face)))
+
+  (with-eval-after-load 'semantic
     (add-hook 'semantic-mode-hook
               (lambda ()
                 (dolist (x (default-value 'completion-at-point-functions))
@@ -395,16 +430,19 @@ you should place your code here."
                (qdoc (when (functionp qfunc) (car (split-string (documentation qfunc) (concat "\\s-*\n\\s-*\\|" (sentence-end)) t)))))
           (cond (prefix-arg #'keyboard-quit)
                 ((active-minibuffer-window) #'minibuffer-keyboard-quit)
-                ((string-match-p "\\b\\(quit\\|exit\\)\\b" (format "%s %s" qfunc qdoc)) qfunc)
+                ((string-match-p "\\b\\(quit\\|exit\\|toggle\\|off\\|hide\\)\\b" (format "%s %s" qfunc qdoc)) qfunc)
                 ((key-binding [escape]))
                 ((string-prefix-p "evil-" (symbol-name (evil-escape-func))) #'keyboard-quit)
                 ((evil-escape-func))))))
   (define-key override-global-map [escape] `(menu-item "" nil :filter ,#'my-overriding-escape))
   (evil-make-intercept-map override-global-map)
 
-  (defun my-evilem-define-advice (orig-fun &rest args)
-    (let ((i (or (cl-position :scope args) (length args))))
-      (apply orig-fun (cl-remove-if-not #'ignore args :start i :count 2))))
+  (defun my-evilem-define-advice (orig-fun key motions &rest kwargs)
+    (apply orig-fun key motions :scope nil kwargs)
+    ;; (if-let (i (cl-position :scope args))
+    ;;     (setcar (nthcdr (1+ i) args) nil))
+    ;; (apply orig-fun args)
+    )
   (advice-add #'evilem-define :around #'my-evilem-define-advice)
   (evilem-default-keybindings "ESC")
   (define-key evil-motion-state-map [?\e ?/] #'swiper)
