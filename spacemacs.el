@@ -332,10 +332,8 @@ you should place your code here."
 
   (global-prettify-symbols-mode)
   (add-hook 'prog-mode-hook
-            (lambda () (mapc (lambda (x) (push x prettify-symbols-alist)) '(("lambda" ?λ)
-                                                                  ("<=" . ?≤)
-                                                                  (">=" . ?≥)
-                                                                  ("!=" . ?≠)))))
+            (lambda () (mapc (lambda (x) (push x prettify-symbols-alist))
+                        '(("lambda" ?λ) ("<=" . ?≤) (">=" . ?≥) ("!=" . ?≠)))))
 
   (setcdr (assoc 'which-key-mode spacemacs--diminished-minor-modes) '(""))
   (setcdr (assoc 'hybrid-mode spacemacs--diminished-minor-modes) '(""))
@@ -377,10 +375,9 @@ you should place your code here."
   (defun my-update-spacemacs ()
     (interactive)
     (magit-status user-emacs-directory)
-    ;; (magit-fetch "origin" nil)
-    (if (member "spacemacs" (magit-list-remotes))
-        (magit-fetch "spacemacs" nil)
-      (magit-remote-add "spacemacs" "https://github.com/syl20bnr/spacemacs")))
+    (unless (member "spacemacs" (magit-list-remotes))
+      (magit-run-git-async "remote" "add" "spacemacs" "https://github.com/syl20bnr/spacemacs"))
+    (magit-fetch "spacemacs" nil))
   (spacemacs/set-leader-keys "ous" #'my-update-spacemacs)
   (defun my-update-packages ()
     (interactive)
@@ -405,12 +402,10 @@ you should place your code here."
   (defun my-do-in-normal-state ()
     (interactive)
     (evil-normal-state)
+    (right-char)
     (call-interactively (key-binding (this-single-command-keys))))
-  (evil-global-set-key 'hybrid [down-mouse-1] #'my-do-in-normal-state)
-  (evil-global-set-key 'hybrid [down] #'my-do-in-normal-state)
-  (evil-global-set-key 'hybrid [up] #'my-do-in-normal-state)
-  (evil-global-set-key 'hybrid [left] #'my-do-in-normal-state)
-  (evil-global-set-key 'hybrid [right] #'my-do-in-normal-state)
+  (mapc (lambda (x) (evil-global-set-key 'hybrid x #'my-do-in-normal-state))
+        '([down-mouse-1] [down] [up] [left] [right]))
 
   ;; escape key nonsense
   (setq evil-esc-delay .25)
