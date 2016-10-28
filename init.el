@@ -1,4 +1,4 @@
-;;(package-initialize)
+;(package-initialize)
 (setenv "SPACEMACSDIR" "~/.emacs.d/")
 (setq dotspacemacs-filepath "~/.emacs.d/spacemacs.el")
 (setq spacemacs-start-directory "~/.emacs.d/spacemacs/")
