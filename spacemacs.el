@@ -161,7 +161,7 @@ values."
    dotspacemacs-emacs-leader-key "M-m"
    ;; Major mode leader key is a shortcut key which is the equivalent of
    ;; pressing `<leader> m`. Set it to `nil` to disable it. (default ",")
-   dotspacemacs-major-mode-leader-key nil
+   dotspacemacs-major-mode-leader-key ","
    ;; Major mode leader key accessible in `emacs state' and `insert state'.
    ;; (default "C-M-m")
    dotspacemacs-major-mode-emacs-leader-key "C-M-m"
@@ -312,6 +312,7 @@ before packages are loaded. If you are unsure, you should try in setting them in
   (unless (file-exists-p custom-file)
     (write-region "" nil custom-file))
   (load custom-file)
+
   (message "finished user-init ok"))
 
 (defun dotspacemacs/user-config ()
@@ -335,23 +336,21 @@ you should place your code here."
             (lambda () (mapc (lambda (x) (push x prettify-symbols-alist))
                         '(("lambda" ?λ) ("<=" . ?≤) (">=" . ?≥) ("!=" . ?≠)))))
 
-  (setcdr (assoc 'which-key-mode spacemacs--diminished-minor-modes) '(""))
-  (setcdr (assoc 'hybrid-mode spacemacs--diminished-minor-modes) '(""))
-  (setcdr (assoc 'company-mode spacemacs--diminished-minor-modes) '(""))
-  (with-eval-after-load 'yasnippet
-    (setcdr (assoc 'yas-minor-mode spacemacs--diminished-minor-modes) '("")))
+  (dolist (x '(which-key-mode hybrid-mode company-mode yas-minor-mode))
+    (eval `(with-eval-after-load (if (autoloadp (symbol-function x)) (intern (nth 1 (symbol-function x))) 'emacs)
+             (setcdr (assoc ',x spacemacs--diminished-minor-modes) '("")))))
 
   (defface my-dummy-face nil "")
 
-  (defun my-exclude-point-from-search (orig-fun symbol search-range)
+  (defun my-exclude-point-from-search (f symbol search-range)
     (let ((beg (car search-range))
           (end (cdr search-range))
           (befp (max (- (point) 1) (point-min)))
           (aftp (min (+ (point) 1) (point-max))))
       (cond ((= beg end) nil)
-            ((<= beg (point) end) (nconc (funcall orig-fun symbol (cons beg befp))
-                                         (funcall orig-fun symbol (cons aftp end))))
-            ((funcall orig-fun symbol search-range)))))
+            ((<= beg (point) end) (nconc (funcall f symbol (cons beg befp))
+                                         (funcall f symbol (cons aftp end))))
+            ((funcall f symbol search-range)))))
   (advice-add #'ahs-search-symbol :around #'my-exclude-point-from-search)
   (with-eval-after-load 'auto-highlight-symbol
     (dolist (range ahs-range-plugin-list)
@@ -361,21 +360,25 @@ you should place your code here."
 
   (with-eval-after-load 'semantic
     (add-hook 'semantic-mode-hook
-              (lambda ()
-                (dolist (x (default-value 'completion-at-point-functions))
-                  (when (string-prefix-p "semantic-" (symbol-name x))
-                    (remove-hook 'completion-at-point-functions x))))))
+              (lambda () (dolist (x (default-value 'completion-at-point-functions))
+                      (when (string-prefix-p "semantic-" (symbol-name x))
+                        (remove-hook 'completion-at-point-functions x))))))
 
-  (defun my-force-diminish-ascii (orig-fun &rest args)
+  (defun my-force-diminish-ascii (f &rest args)
     (let ((dotspacemacs-mode-line-unicode-symbols nil))
-      (apply orig-fun args)))
+      (apply f args)))
   (advice-add #'spacemacs/diminish-hook :around #'my-force-diminish-ascii)
   (advice-add #'spacemacs//prepare-diminish :around #'my-force-diminish-ascii)
 
   (defun my-update-spacemacs ()
     (interactive)
     (magit-status user-emacs-directory)
-    (magit-subtree-pull "spacemacs" "https://github.com/syl20bnr/spacemacs" "develop" "--squash"))
+    (cl-loop for x in '((magit-run-git-async "stash")
+                        (magit-subtree-pull "spacemacs" "https://github.com/syl20bnr/spacemacs" "develop" "--squash"))
+             do (let ((p (eval x)))
+                  (when (processp p)
+                    (while (process-live-p p) (accept-process-output p))
+                    (unless (= 0 (process-exit-status p)) (cl-return))))))
   (spacemacs/set-leader-keys "ous" #'my-update-spacemacs)
   (defun my-update-packages ()
     (interactive)
@@ -393,7 +396,7 @@ you should place your code here."
   (setq avy-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l ?\; ?\'
                       ?\t ?q ?w ?e ?r ?u ?i ?o ?p ?\[
                       ?c ?v ?n ?m ?\s))
-  (advice-add #'avy--key-to-char :around (lambda (orig-fun c) (case c (?\s ?␣) (?\t ?→) (t (funcall orig-fun c)))))
+  (advice-add #'avy--key-to-char :around (lambda (f c) (case c (?\s ?␣) (?\t ?→) (t (funcall f c)))))
 
   (setq powerline-default-separator 'arrow)
 
@@ -442,13 +445,9 @@ you should place your code here."
   (define-key override-global-map [escape] `(menu-item "" nil :filter ,#'my-overriding-escape))
   (evil-make-intercept-map override-global-map)
 
-  (defun my-evilem-define-advice (orig-fun key motions &rest kwargs)
-    (apply orig-fun key motions :scope nil kwargs)
-    ;; (if-let (i (cl-position :scope args))
-    ;;     (setcar (nthcdr (1+ i) args) nil))
-    ;; (apply orig-fun args)
-    )
-  (advice-add #'evilem-define :around #'my-evilem-define-advice)
+  (defun my-evilem--collect-advice (f func &optional scope all-windows initial-point sort-key collect-postprocess)
+    (funcall f func all-windows initial-point sort-key collect-postprocess))
+  (advice-add #'evilem--collect :around #'my-evilem--collect-advice)
   (evilem-default-keybindings "ESC")
   (define-key evil-motion-state-map [?\e ?/] #'swiper)
   (with-eval-after-load 'term
