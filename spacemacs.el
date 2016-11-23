@@ -84,7 +84,7 @@ values."
   ;; This setq-default sexp is an exhaustive list of all the supported
   ;; spacemacs settings.
   (setq-default
-   ;; If non nil ELPA repositories are contacted via HTTPS whenever it's
+   ;; If non-nil ELPA repositories are contacted via HTTPS whenever it's
    ;; possible. Set it to nil if you have no way to use HTTPS in your
    ;; environment, otherwise it is strongly recommended to let it set to t.
    ;; This variable has no effect if Emacs is launched with the parameter
@@ -93,11 +93,11 @@ values."
    dotspacemacs-elpa-https t
    ;; Maximum allowed time in seconds to contact an ELPA repository.
    dotspacemacs-elpa-timeout 5
-   ;; If non nil then spacemacs will check for updates at startup
+   ;; If non-nil then spacemacs will check for updates at startup
    ;; when the current branch is not `develop'. Note that checking for
    ;; new versions works via git commands, thus it calls GitHub services
    ;; whenever you start Emacs. (default nil)
-   dotspacemacs-check-for-update nil
+   dotspacemacs-check-for-update t
    ;; If non-nil, a form that evaluates to a package directory. For example, to
    ;; use different package directories for different Emacs versions, set this
    ;; to `emacs-version'.
@@ -109,7 +109,7 @@ values."
    ;; section of the documentation for details on available variables.
    ;; (default 'vim)
    dotspacemacs-editing-style 'hybrid
-   ;; If non nil output loading progress in `*Messages*' buffer. (default nil)
+   ;; If non-nil output loading progress in `*Messages*' buffer. (default nil)
    dotspacemacs-verbose-loading t
    ;; Specify the startup banner. Default value is `official', it displays
    ;; the official spacemacs logo. An integer value is the index of text
@@ -172,7 +172,7 @@ values."
    ;; In the terminal, these pairs are generally indistinguishable, so this only
    ;; works in the GUI. (default nil)
    dotspacemacs-distinguish-gui-tab nil
-   ;; If non nil `Y' is remapped to `y$' in Evil states. (default nil)
+   ;; If non-nil `Y' is remapped to `y$' in Evil states. (default nil)
    dotspacemacs-remap-Y-to-y$ nil
    ;; If non-nil, the shift mappings `<' and `>' retain visual state if used
    ;; there. (default t)
@@ -180,15 +180,15 @@ values."
    ;; If non-nil, J and K move lines up and down when in visual mode.
    ;; (default nil)
    dotspacemacs-visual-line-move-text nil
-   ;; If non nil, inverse the meaning of `g' in `:substitute' Evil ex-command.
+   ;; If non-nil, inverse the meaning of `g' in `:substitute' Evil ex-command.
    ;; (default nil)
    dotspacemacs-ex-substitute-global nil
    ;; Name of the default layout (default "Default")
    dotspacemacs-default-layout-name "Default"
-   ;; If non nil the default layout name is displayed in the mode-line.
+   ;; If non-nil the default layout name is displayed in the mode-line.
    ;; (default nil)
    dotspacemacs-display-default-layout nil
-   ;; If non nil then the last auto saved layouts are resume automatically upon
+   ;; If non-nil then the last auto saved layouts are resume automatically upon
    ;; start. (default nil)
    dotspacemacs-auto-resume-layouts nil
    ;; Size (in MB) above which spacemacs will prompt to open the large file
@@ -202,9 +202,9 @@ values."
    dotspacemacs-auto-save-file-location 'cache
    ;; Maximum number of rollback slots to keep in the cache. (default 5)
    dotspacemacs-max-rollback-slots 5
-   ;; If non nil, `helm' will try to minimize the space it uses. (default nil)
+   ;; If non-nil, `helm' will try to minimize the space it uses. (default nil)
    dotspacemacs-helm-resize nil
-   ;; if non nil, the helm header is hidden when there is only one source.
+   ;; if non-nil, the helm header is hidden when there is only one source.
    ;; (default nil)
    dotspacemacs-helm-no-header nil
    ;; define the position to display `helm', options are `bottom', `top',
@@ -215,7 +215,7 @@ values."
    ;; source settings. Else, disable fuzzy matching in all sources.
    ;; (default 'always)
    dotspacemacs-helm-use-fuzzy 'always
-   ;; If non nil the paste micro-state is enabled. When enabled pressing `p`
+   ;; If non-nil the paste micro-state is enabled. When enabled pressing `p`
    ;; several times cycle between the kill ring content. (default nil)
    dotspacemacs-enable-paste-transient-state nil
    ;; Which-key delay in seconds. The which-key buffer is the popup listing
@@ -228,21 +228,21 @@ values."
    dotspacemacs-which-key-position 'bottom
    ;; Control where `switch-to-buffer' displays the buffer. If nil,
    ;; `switch-to-buffer' displays the buffer in the current window even if
-   ;; another same-purpose window is available. If non nil, `switch-to-buffer'
+   ;; another same-purpose window is available. If non-nil, `switch-to-buffer'
    ;; displays the buffer in a same-purpose window even if the buffer can be
    ;; displayed in the current window. (default nil)
    dotspacemacs-switch-to-buffer-prefers-purpose nil
-   ;; If non nil a progress bar is displayed when spacemacs is loading. This
+   ;; If non-nil a progress bar is displayed when spacemacs is loading. This
    ;; may increase the boot time on some systems and emacs builds, set it to
    ;; nil to boost the loading time. (default t)
    dotspacemacs-loading-progress-bar t
-   ;; If non nil the frame is fullscreen when Emacs starts up. (default nil)
+   ;; If non-nil the frame is fullscreen when Emacs starts up. (default nil)
    ;; (Emacs 24.4+ only)
    dotspacemacs-fullscreen-at-startup nil
-   ;; If non nil `spacemacs/toggle-fullscreen' will not use native fullscreen.
+   ;; If non-nil `spacemacs/toggle-fullscreen' will not use native fullscreen.
    ;; Use to disable fullscreen animations in OSX. (default nil)
    dotspacemacs-fullscreen-use-non-native nil
-   ;; If non nil the frame is maximized when Emacs starts up.
+   ;; If non-nil the frame is maximized when Emacs starts up.
    ;; Takes effect only if `dotspacemacs-fullscreen-at-startup' is nil.
    ;; (default nil) (Emacs 24.4+ only)
    dotspacemacs-maximized-at-startup t
@@ -254,17 +254,17 @@ values."
    ;; the transparency level of a frame when it's inactive or deselected.
    ;; Transparency can be toggled through `toggle-transparency'. (default 90)
    dotspacemacs-inactive-transparency 90
-   ;; If non nil show the titles of transient states. (default t)
+   ;; If non-nil show the titles of transient states. (default t)
    dotspacemacs-show-transient-state-title t
-   ;; If non nil show the color guide hint for transient state keys. (default t)
+   ;; If non-nil show the color guide hint for transient state keys. (default t)
    dotspacemacs-show-transient-state-color-guide t
-   ;; If non nil unicode symbols are displayed in the mode line. (default t)
+   ;; If non-nil unicode symbols are displayed in the mode line. (default t)
    dotspacemacs-mode-line-unicode-symbols t
-   ;; If non nil smooth scrolling (native-scrolling) is enabled. Smooth
+   ;; If non-nil smooth scrolling (native-scrolling) is enabled. Smooth
    ;; scrolling overrides the default behavior of Emacs which recenters point
    ;; when it reaches the top or bottom of the screen. (default t)
    dotspacemacs-smooth-scrolling t
-   ;; If non nil line numbers are turned on in all `prog-mode' and `text-mode'
+   ;; If non-nil line numbers are turned on in all `prog-mode' and `text-mode'
    ;; derivatives. If set to `relative', also turns on relative line numbers.
    ;; (default nil)
    dotspacemacs-line-numbers t
@@ -282,13 +282,13 @@ values."
    ;; `current', `all' or `nil'. Default is `all' (highlight any scope and
    ;; emphasis the current one). (default 'all)
    dotspacemacs-highlight-delimiters 'all
-   ;; If non nil, advise quit functions to keep server open when quitting.
+   ;; If non-nil, advise quit functions to keep server open when quitting.
    ;; (default nil)
    dotspacemacs-persistent-server nil
    ;; List of search tool executable names. Spacemacs uses the first installed
-   ;; tool of the list. Supported tools are `ag', `pt', `ack' and `grep'.
-   ;; (default '("ag" "pt" "ack" "grep"))
-   dotspacemacs-search-tools '("ag" "pt" "ack" "grep")
+   ;; tool of the list. Supported tools are `rg', `ag', `pt', `ack' and `grep'.
+   ;; (default '("rg" "ag" "pt" "ack" "grep"))
+   dotspacemacs-search-tools '("rg" "ag" "pt" "ack" "grep")
    ;; The default package repository used if no explicit repository has been
    ;; specified with an installed package.
    ;; Not used for now. (default nil)
@@ -308,12 +308,13 @@ executes.
  This function is mostly useful for variables that need to be set
 before packages are loaded. If you are unsure, you should try in setting them in
 `dotspacemacs/user-config' first."
-  (setq custom-file (concat dotspacemacs-directory "custom.el"))
-  (unless (file-exists-p custom-file)
-    (write-region "" nil custom-file))
-  (load custom-file)
+  ;; (setq custom-file (concat dotspacemacs-directory "custom.el"))
+  ;; (unless (file-exists-p custom-file)
+  ;;   (write-region "" nil custom-file))
+  ;; (load custom-file)
 
-  (message "finished user-init ok"))
+  (message "finished user-init ok")
+  )
 
 (defun dotspacemacs/user-config ()
   "Configuration function for user code.
@@ -322,6 +323,81 @@ layers configuration.
 This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
+  ;; (eval-when-compile (unless load-file-name
+  ;;                      ()
+  ;;                      (setq gc-cons-threshold 100000000)
+  ;;                      ;; (setenv "SPACEMACSDIR" "~/.emacs.d/")
+  ;;                      (defvar spacemacs-start-directory "~/.emacs.d/spacemacs/")
+  ;;                      (defvar dotspacemacs-filepath "~/.emacs.d/spacemacs.el")
+  ;;                      (defvar dotspacemacs-directory nil)
+  ;;                      (defvar dotspacemacs-configuration-layers)
+  ;;                      (defvar dotspacemacs-distribution)
+  ;;                      (defvar configuration-layer--used-layers)
+  ;;                      (load-file (concat spacemacs-start-directory "core/core-load-paths.el"))
+  ;;                      (require 'core-spacemacs)
+  ;;                      (require 'core-configuration-layer)
+  ;;                      (require 'eieio)
+  ;;                      (load-file dotspacemacs-filepath)
+  ;;                      ;; (configuration-layer/initialize)
+  ;;                      ;; (advice-add #'make-hash-table :around (lambda (f &rest args)
+  ;;                      ;;                                         (funcall f :size 300)))
+  ;;                      (dotspacemacs/layers)
+  ;;                      (configuration-layer/discover-layers)
+  ;;                      ;; (configuration-layer//declare-used-layers dotspacemacs-configuration-layers)
+  ;;                      ;; (error "this is a error %s" "aaaaaaaaaaa")
+  ;;                      ;; (warn "aaaaaaa")
+  ;;                      (setq configuration-layer--used-layers nil)
+  ;;                      (let ((configuration-layer--declared-layers-usedp t))
+  ;;                        ;; (dolist (layer-specs dotspacemacs-configuration-layers)
+  ;;                        ;;   (let* ((layer-name (or (car-safe layer-specs) layer-specs))
+  ;;                        ;;          (layer (configuration-layer/get-layer layer-name)))
+  ;;                        ;;     (if layer
+  ;;                        ;;         (let ((layer-path (eieio-oref layer :dir)))
+  ;;                        ;;           (unless (string-match-p "+distributions" layer-path)
+  ;;                        ;;             (configuration-layer/declare-layer layer-specs)))
+  ;;                        ;;       )))
+  ;;                        ;; (configuration-layer/declare-layer dotspacemacs-distribution)
+  ;;                        (let* ((layer-specs dotspacemacs-distribution)
+  ;;                               (layer-name (if (listp layer-specs) (car layer-specs) layer-specs))
+  ;;                               (layer (configuration-layer/get-layer layer-name))
+  ;;                               (usedp configuration-layer--declared-layers-usedp))
+  ;;                          (if layer
+  ;;                              (let ((obj (configuration-layer/make-layer
+  ;;                                          layer-specs
+  ;;                                          (configuration-layer/get-layer layer-name)
+  ;;                                          usedp)))
+  ;;                                (configuration-layer//add-layer obj usedp)
+  ;;                                (configuration-layer//set-layer-variables obj)
+  ;;                                (when (or usedp configuration-layer--load-packages-files)
+  ;;                                  (configuration-layer//load-layer-files layer-name '("layers.el")))
+  ;;                                )
+  ;;                            )
+  ;;                          )
+  ;;                        ;; (configuration-layer/declare-layer 'spacemacs-bootstrap)
+  ;;                        )
+  ;;                      ))
+
+
+  (eval-when-compile
+    (unless (or load-file-name (featurep 'core-spacemacs))
+      (setenv "SPACEMACSDIR" "~/.emacs.d/")
+      (defvar dotspacemacs-filepath "~/.emacs.d/spacemacs.el")
+      (defvar spacemacs-start-directory "~/.emacs.d/spacemacs/")
+
+      (setq gc-cons-threshold 100000000)
+
+      (defconst spacemacs-version          "0.200.5" "Spacemacs version.")
+      (defconst spacemacs-emacs-min-version   "24.4" "Minimal version of Emacs.")
+
+      (if (not (version<= spacemacs-emacs-min-version emacs-version))
+          (message (concat "Your version of Emacs (%s) is too old. "
+                           "Spacemacs requires Emacs version %s or above.")
+                   emacs-version spacemacs-emacs-min-version)
+        (load-file "~/.emacs.d/spacemacs/core/core-load-paths.el")
+        (require 'core-spacemacs)
+        (spacemacs/init)
+        (configuration-layer/sync t))))
+
   (require 'cl-lib)
   (require 'avy)
 
@@ -330,11 +406,42 @@ you should place your code here."
   (spacemacs/toggle-highlight-current-line-globally-off)
   (spacemacs/toggle-display-time-on)
   (setq org-bullets-bullet-list '("•"))
+  (setq powerline-default-separator 'arrow)
+
+  (defun my-exec-func (func)
+    (ignore-errors (funcall-interactively func) t))
+
+  (defun my-collect (func &optional thing)
+    (assert (commandp func))
+    (my-exec-func func)
+    (redisplay)
+    (let ((avy-background) (points) (compf)
+          (bounds (if thing (bounds-of-thing-at-point thing) (cons (window-start) (window-end))))
+          (interrupted t))
+      (save-excursion
+        (when (my-exec-func func)
+          (setq points (list (point)))
+          (when (my-exec-func func)
+            (setq compf (if (< (car points) (point)) '< '>))
+            (while-no-input
+              (when (and compf (car points))
+                (while (and (<= (car bounds) (point) (cdr bounds))
+                            (funcall compf (car points) (point))
+                            (progn (push (point) points)
+                                   (my-exec-func func)))))
+              (setq interrupted nil)))))
+      (unless interrupted
+        (evilem--jump (nreverse points)))))
+
+  (with-eval-after-load 'flycheck
+   (push 'sentence-end-double-space flycheck-emacs-lisp-checkdoc-variables)
+   (cl-delete 'emacs-lisp-checkdoc flycheck-checkers))
 
   (global-prettify-symbols-mode)
-  (add-hook 'prog-mode-hook
-            (lambda () (mapc (lambda (x) (push x prettify-symbols-alist))
-                        '(("lambda" ?λ) ("<=" . ?≤) (">=" . ?≥) ("!=" . ?≠)))))
+  (add-hook 'prog-mode-hook (lambda ()
+                              (mapc (lambda (x) (push x prettify-symbols-alist))
+                                    '(("lambda" ?λ) ("<=" . ?≤) (">=" . ?≥) ("!=" . ?≠)))
+                              (spacemacs/toggle-syntax-checking-on)))
 
   (dolist (x '(which-key-mode hybrid-mode company-mode yas-minor-mode))
     (eval `(with-eval-after-load (if (autoloadp (symbol-function x)) (intern (nth 1 (symbol-function x))) 'emacs)
@@ -342,15 +449,9 @@ you should place your code here."
 
   (defface my-dummy-face nil "")
 
-  (defun my-exclude-point-from-search (f symbol search-range)
-    (let ((beg (car search-range))
-          (end (cdr search-range))
-          (befp (max (- (point) 1) (point-min)))
-          (aftp (min (+ (point) 1) (point-max))))
-      (cond ((= beg end) nil)
-            ((<= beg (point) end) (nconc (funcall f symbol (cons beg befp))
-                                         (funcall f symbol (cons aftp end))))
-            ((funcall f symbol search-range)))))
+  (defun my-exclude-point-from-search (f symbol range)
+    (nconc (funcall f symbol (cons (max (car range) (window-start)) (min (cdr range) (window-end) (1- (point)))))
+           (funcall f symbol (cons (max (car range) (window-start) (1+ (point))) (min (cdr range) (window-end))))))
   (advice-add #'ahs-search-symbol :around #'my-exclude-point-from-search)
   (with-eval-after-load 'auto-highlight-symbol
     (dolist (range ahs-range-plugin-list)
@@ -370,15 +471,32 @@ you should place your code here."
   (advice-add #'spacemacs/diminish-hook :around #'my-force-diminish-ascii)
   (advice-add #'spacemacs//prepare-diminish :around #'my-force-diminish-ascii)
 
+  (setq spacemacs-version-check-interval "14400")
+  (setq spacemacs-version--startup-check-interval 14400)
+  (setq spacemacs-checkversion-branch "develop")
+  (advice-add #'spacemacs/check-for-new-version :around
+              (lambda (f force &optional interval)
+                (require 'magit-process)
+                (cl-letf (((symbol-function 'spacemacs//git-get-current-branch) (lambda () "dummy"))
+                          (can-update (spacemacs//can-check-for-new-version-at-startup)))
+                  (funcall f force interval)
+                  (when (and (not spacemacs-new-version)
+                             (or force (and can-update dotspacemacs-check-for-update))
+                             (let ((default-directory (file-truename spacemacs-start-directory)))
+                               (magit-run-git "fetch")
+                               (not (magit-rev-eq "@" "origin/develop"))))
+                    (setq spacemacs-new-version "git-latest")
+                    (message "New version of Spacemacs available: git-latest")))))
+  (copy-face 'spacemacs-mode-line-new-version-lighter-success-face 'spacemacs-mode-line-new-version-lighter-git-face)
+  (defface spacemacs-mode-line-new-version-lighter-git-face '((t :foreground "dark cyan" :inherit spacemacs-mode-line-new-version-lighter-success-face)) "")
+  (advice-add #'spacemacs/get-new-version-lighter-face :around (lambda (f current new)
+                                                                 (if (equal new "git-latest")
+                                                                     'spacemacs-mode-line-new-version-lighter-git-face
+                                                                   (funcall f current new))))
   (defun my-update-spacemacs ()
     (interactive)
-    (magit-status user-emacs-directory)
-    (cl-loop for x in '((magit-run-git-async "stash")
-                        (magit-subtree-pull "spacemacs" "https://github.com/syl20bnr/spacemacs" "develop" "--squash"))
-             do (let ((p (eval x)))
-                  (when (processp p)
-                    (while (process-live-p p) (accept-process-output p))
-                    (unless (= 0 (process-exit-status p)) (cl-return))))))
+    (magit-status-internal spacemacs-start-directory)
+    (magit-pull "origin" "--rebase"))
   (spacemacs/set-leader-keys "ous" #'my-update-spacemacs)
   (defun my-update-packages ()
     (interactive)
@@ -386,10 +504,6 @@ you should place your code here."
       (view-buffer-other-window "*spacemacs*"))
     (configuration-layer/update-packages))
   (spacemacs/set-leader-keys "oup" #'my-update-packages)
-  (defun my-view-messages-buffer ()
-    (interactive)
-    (view-buffer (messages-buffer)))
-  (spacemacs/set-leader-keys "om" #'my-view-messages-buffer)
   (spacemacs/set-leader-keys ":" #'evil-ex)
 
   (setq avy-style 'at)
@@ -398,7 +512,6 @@ you should place your code here."
                       ?c ?v ?n ?m ?\s))
   (advice-add #'avy--key-to-char :around (lambda (f c) (case c (?\s ?␣) (?\t ?→) (t (funcall f c)))))
 
-  (setq powerline-default-separator 'arrow)
 
   (defun my-do-in-normal-state ()
     (interactive)
@@ -433,15 +546,15 @@ you should place your code here."
   (defvar my-escape-recur nil)
   (defun my-overriding-escape (_)
     (interactive)
-    (if-let (my-escape-recur (not (or my-escape-recur (< 1 (length (this-command-keys))))))
-        (let* ((qfunc (key-binding [?q]))
-               (qdoc (when (functionp qfunc) (car (split-string (documentation qfunc) (concat "\\s-*\n\\s-*\\|" (sentence-end)) t)))))
-          (cond (prefix-arg #'keyboard-quit)
-                ((active-minibuffer-window) #'minibuffer-keyboard-quit)
-                ((string-match-p "\\b\\(quit\\|exit\\|toggle\\|off\\|hide\\)\\b" (format "%s %s" qfunc qdoc)) qfunc)
-                ((key-binding [escape]))
-                ((string-prefix-p "evil-" (symbol-name (evil-escape-func))) #'keyboard-quit)
-                ((evil-escape-func))))))
+    (if-let (my-escape-recur (and (= 1 (length (this-command-keys))) (not my-escape-recur)))
+        (cond ((or (region-active-p) prefix-arg) #'keyboard-quit)
+              ((active-minibuffer-window) #'minibuffer-keyboard-quit)
+              ((if-let ((qfunc (key-binding [?q]))
+                        (qdoc (if (functionp qfunc) (car (split-string (documentation qfunc) (concat "\\s-*\n\\s-*\\|" (sentence-end)) t)) "")))
+                   (when (string-match-p "\\b\\(quit\\|exit\\|toggle\\|off\\|hide\\)\\b" (format "%s %s" qfunc qdoc)) qfunc)))
+              ((key-binding [escape]))
+              ((let ((efunc (evil-escape-func)))
+                 (if (string-prefix-p "evil-" (symbol-name efunc)) #'keyboard-quit efunc))))))
   (define-key override-global-map [escape] `(menu-item "" nil :filter ,#'my-overriding-escape))
   (evil-make-intercept-map override-global-map)
 
@@ -456,3 +569,36 @@ you should place your code here."
   (define-key query-replace-map [escape] 'quit)
 
   (message "finished user-config ok"))
+
+;; (unless (featurep 'core-spacemacs)
+;;   (setenv "SPACEMACSDIR" "~/.emacs.d/")
+;;   (defvar spacemacs-start-directory "~/.emacs.d/spacemacs/")
+;;   (defvar dotspacemacs-filepath "~/.emacs.d/init.el")
+;;   (advice-add #'spacemacs/maybe-install-dotfile :around #'ignore)
+;;   (advice-add #'dotspacemacs/load-file :around #'ignore)
+;;   (load-file "~/.emacs.d/spacemacs/init.el")
+;;   (advice-remove #'dotspacemacs/load-file #'ignore))
+
+;; Do not write anything past this comment. This is where Emacs will
+;; auto-generate custom variable definitions.
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(evil-want-Y-yank-to-eol nil)
+ '(package-selected-packages
+   (quote
+    (powerline orgit org-projectile org-present alert log4e nlinum-relative magit-gitflow ivy-purpose window-purpose ivy-hydra imenu-list parent-mode git-gutter-fringe+ git-gutter-fringe fringe-helper git-gutter+ flyspell-correct-ivy pos-tip flx evil-magit magit-popup git-commit iedit anzu evil goto-chg undo-tree highlight f s diminish counsel-projectile projectile pkg-info epl swiper company-statistics bind-map bind-key packed async avy auto-complete popup package-build org-pomodoro spinner hydra dash magit pdf-tools flycheck-pos-tip smartparens counsel helm helm-core xterm-color wgrep stickyfunc-enhance srefactor smex smeargle shell-pop tablist pcache org gntp org-download nlinum mwim multi-term htmlize gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter flyspell-correct flycheck with-editor evil-easymotion eshell-z eshell-prompt-extras esh-help diff-hl ivy company auto-yasnippet zenburn-theme yasnippet ws-butler window-numbering which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spacemacs-theme spaceline restart-emacs request rainbow-delimiters quelpa popwin persp-mode pcre2el paradox org-plus-contrib org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint info+ indent-guide ido-vertical-mode hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-purpose helm-projectile helm-mode-manager helm-make helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu elisp-slime-nav dumb-jump define-word column-enforce-mode clean-aindent-mode auto-highlight-symbol auto-dictionary auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
+(defun dotspacemacs/emacs-custom-settings ()
+  "Emacs custom settings.
+This is an auto-generated function, do not modify its content directly, use
+Emacs customize menu instead.
+This function is called at the very end of Spacemacs initialization."
+)
